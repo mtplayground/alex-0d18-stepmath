@@ -8,8 +8,10 @@ import {
   type FriendlyMathMessage,
 } from '../../lib/math';
 import { Button } from '../ui';
+import { useCalculatorState } from './calculatorState';
 import { CalculatorInput } from './CalculatorInput';
 import { CalculatorKeypad } from './CalculatorKeypad';
+import { ModeToggle } from './ModeToggle';
 
 const spacedOperators = new Set(['+', '-', '×', '÷']);
 
@@ -39,7 +41,7 @@ function messageClasses(message: FriendlyMathMessage) {
 }
 
 export function QuickCalculator() {
-  const [expression, setExpression] = useState('');
+  const { expression, mode, setExpression, setMode } = useCalculatorState();
   const [messages, setMessages] = useState<FriendlyMathMessage[]>([]);
   const [result, setResult] = useState<string | null>(null);
 
@@ -51,6 +53,12 @@ export function QuickCalculator() {
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (mode === 'guided') {
+      setResult(null);
+      setMessages([]);
+      return;
+    }
 
     const parsed = parseExpression(expression);
 
@@ -75,13 +83,18 @@ export function QuickCalculator() {
   return (
     <div className="grid gap-6">
       <form className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end" onSubmit={handleSubmit}>
-        <CalculatorInput onChange={updateExpression} value={expression} />
-        <Button className="min-h-20 px-8" size="lg" type="submit">
-          Solve
-        </Button>
+        <div className="grid gap-4">
+          <ModeToggle mode={mode} onModeChange={setMode} />
+          <CalculatorInput onChange={updateExpression} value={expression} />
+        </div>
+        {mode === 'quick' ? (
+          <Button className="min-h-20 px-8" size="lg" type="submit">
+            Solve
+          </Button>
+        ) : null}
       </form>
 
-      {result ? (
+      {mode === 'quick' && result ? (
         <section
           aria-label="Quick result"
           className="rounded-panel border border-success-100 bg-success-100 p-5"
@@ -93,7 +106,7 @@ export function QuickCalculator() {
         </section>
       ) : null}
 
-      {messages.length > 0 ? (
+      {mode === 'quick' && messages.length > 0 ? (
         <div className="grid gap-3">
           {messages.map((message) => (
             <section
