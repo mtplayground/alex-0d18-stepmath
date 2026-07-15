@@ -1,0 +1,63 @@
+Architecture plan for the 23-issue roadmap
+
+Project shape
+- Build a static React + TypeScript application using Vite and Tailwind CSS.
+- Keep the math expression engine framework-independent so it can be unit tested without the UI.
+- Ship a self-hostable static build output, with no server-side runtime assumptions.
+
+Module structure and file organization
+- src/main.tsx: React entrypoint.
+- src/App.tsx: top-level app shell, route-free application composition, mode persistence wiring.
+- src/styles/: Tailwind entry CSS, design tokens, shared utility classes.
+- src/components/ui/: design-system primitives such as Button, IconButton, Toggle, Card-like repeated item surfaces, KeypadButton, Progress controls, and VisuallyHidden.
+- src/components/calculator/: calculator input, keypad, expression preview, result panel, and Quick/Guided mode toggle.
+- src/components/guided/: step playback controls, step list, highlighted expression display, and explanation copy renderer.
+- src/components/visualizations/: multiplication grid, fraction slices, percentage bar, and shared visualization frame helpers.
+- src/lib/math/: tokenizer, parser, AST types, evaluator, fraction/percentage helpers, validation, and age-appropriate error mapping.
+- src/lib/guided/: step generator, visualization binding, encouragement micro-copy selection, and playback state helpers.
+- src/lib/storage/: small localStorage wrapper for persisted mode and future preferences.
+- src/types/: shared app-level types that cross UI/math/guided boundaries.
+- src/test/: unit fixtures and test helpers; e2e specs live under e2e/ or tests/e2e depending on the selected runner.
+
+Shared types
+- Token: typed lexical units for numbers, operators, parentheses, fractions, percentages, and whitespace-free source spans.
+- ExpressionNode: AST union for literals, unary operations, binary operations, grouped expressions, fractions, and percentages.
+- EvaluationResult: final value, normalized display value, trace, warnings, and recoverable input errors.
+- EvaluationStep: step id, operation kind, source span, before/after expression text, explanation key, operands, result, and optional visualization payload.
+- MathError: stable code, source span, severity, child-friendly message, and technical debug message for tests.
+- GuidedStep: EvaluationStep plus display text, highlight metadata, playback status, and visualization selection.
+- VisualizationPayload: discriminated union for multiplication-grid, fraction-slice, percentage-bar, or none.
+- AppMode: Quick or Guided, persisted in localStorage.
+
+Issue dependency map
+- #1 enables all frontend work by creating the React + TypeScript + Tailwind baseline.
+- #2 should follow #1 so every later component uses shared design primitives and tokens.
+- #3 can follow #1 and should be verified before deployment-focused work in #23.
+- #4 is the base for #5, #6, #7, #9, #11, #21, and #22.
+- #5 depends on #4 and supplies the step trace used by Guided mode.
+- #6 depends on #4 and #5 because fractions/percentages must parse and evaluate consistently with the trace.
+- #7 depends on #4 through #6 so invalid input is mapped from real parser/evaluator failures.
+- #8 depends on #1 and #2; it can be built before the engine is complete using typed component contracts.
+- #9 depends on #5 through #8 to connect Quick mode to real evaluation.
+- #10 depends on #8 and should land before Guided wiring so mode state is stable.
+- #11 depends on #5, #6, and #7 to generate accurate guided steps and copy hooks.
+- #12 depends on #10 and #11.
+- #13 depends on #11 and #12.
+- #14, #15, and #16 depend on #2 and can be implemented independently once visualization payload types are defined.
+- #17 depends on #11 and #14 through #16.
+- #18 depends on #7 and #11 so copy can be selected by actual error and step kinds.
+- #19 depends on the major UI surfaces from #8 and #12 through #17.
+- #20 depends on completed interactive surfaces and should include keyboard, screen reader, focus, contrast, and reduced-motion checks.
+- #21 depends on Quick mode, Guided mode, and all supported topics being wired.
+- #22 depends on the full math/input behavior and should harden parser, evaluator, and UI edge cases.
+- #23 depends on #3, #20, #21, and #22.
+
+Key design decisions
+- Represent source spans throughout tokenization, parsing, evaluation, and display so invalid input and order-of-operations highlights point to the exact expression segment.
+- Use a recursive-descent parser with explicit precedence levels. This is small enough for the project scope and easier to explain/test than a generic parser generator.
+- Store numeric values internally as rational values where practical, then format for display at the UI boundary. This keeps fractions predictable and avoids decimal drift in guided steps.
+- Treat percentages as typed numeric nodes rather than string suffixes so 50%, 10 + 5%, and percentage visualizations can be handled consistently.
+- Generate guided explanations from structured step kinds and payloads instead of pre-rendered strings. This keeps micro-copy, accessibility labels, and visualization selection aligned.
+- Keep visualization components pure and driven by payload data. They should not inspect expression strings or duplicate math logic.
+- Persist only small user preferences, starting with Quick/Guided mode. Do not persist entered expressions unless a future issue explicitly requires it.
+- Test the math engine heavily with unit tests and reserve end-to-end tests for representative user flows across arithmetic, fractions, percentages, invalid input, mode persistence, and visual step playback.
