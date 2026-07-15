@@ -111,21 +111,38 @@ export type ParseResult =
     };
 
 export type MathEvaluationError = {
-  code: 'division-by-zero' | 'unsupported-expression';
+  code: 'division-by-zero';
   message: string;
   span: SourceSpan;
 };
+
+export type FractionVisualValue = {
+  denominator: number;
+  filledPortion: number;
+  kind: 'fraction';
+  numerator: number;
+};
+
+export type PercentageVisualValue = {
+  decimal: number;
+  filledPortion: number;
+  kind: 'percentage';
+  percent: number;
+};
+
+export type EvaluationVisualValue = FractionVisualValue | PercentageVisualValue;
 
 export type EvaluationStep = {
   after: string;
   before: string;
   id: string;
-  kind: 'binary' | 'unary';
+  kind: 'binary' | 'fraction' | 'percentage' | 'unary';
   operands: number[];
-  operator: BinaryOperator | UnaryOperator;
+  operator: BinaryOperator | UnaryOperator | '%';
   order: number;
   result: number;
   span: SourceSpan;
+  visual?: EvaluationVisualValue;
 };
 
 export type EvaluationResult =
@@ -134,6 +151,7 @@ export type EvaluationResult =
       ok: true;
       trace: EvaluationStep[];
       value: number;
+      visual?: EvaluationVisualValue;
     }
   | {
       errors: MathEvaluationError[];
