@@ -1,6 +1,8 @@
 export { evaluateExpressionAst } from './evaluator';
+export { explainMathError, explainMathErrors, getExpressionHints } from './messages';
 export { parseExpression } from './parser';
 export { tokenizeExpression } from './tokenizer';
+export type { FriendlyMathMessage } from './messages';
 export type {
   BinaryOperator,
   EvaluationResult,
