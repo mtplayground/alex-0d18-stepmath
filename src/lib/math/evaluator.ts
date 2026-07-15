@@ -2,6 +2,7 @@ import type {
   BinaryOperator,
   EvaluationResult,
   EvaluationStep,
+  EvaluationVisualValue,
   ExpressionNode,
   MathEvaluationError,
   SourceSpan,
@@ -11,6 +12,7 @@ import type {
 type EvaluatedNode = {
   display: string;
   value: number;
+  visual?: EvaluationVisualValue;
 };
 
 type EvaluationContext = {
@@ -30,14 +32,6 @@ function formatNumber(value: number) {
   }
 
   return Number.isInteger(value) ? String(value) : String(Number(value.toPrecision(12)));
-}
-
-function unsupportedExpression(kind: ExpressionNode['kind'], span: SourceSpan): EvaluationFailure {
-  return new EvaluationFailure({
-    code: 'unsupported-expression',
-    message: `${kind} expressions will be evaluated in a later math module.`,
-    span,
-  });
 }
 
 function divisionByZero(span: SourceSpan): EvaluationFailure {
@@ -93,6 +87,69 @@ function renderUnary(operator: UnaryOperator, operand: string) {
   return `${operator}${operand}`;
 }
 
+function evaluateFraction(
+  node: Extract<ExpressionNode, { kind: 'fraction' }>,
+  context: EvaluationContext,
+) {
+  const numerator = node.numerator.value;
+  const denominator = node.denominator.value;
+
+  if (denominator === 0) {
+    throw divisionByZero(node.denominator.span);
+  }
+
+  const result = numerator / denominator;
+  const display = formatNumber(result);
+  const visual: EvaluationVisualValue = {
+    denominator,
+    filledPortion: result,
+    kind: 'fraction',
+    numerator,
+  };
+
+  recordStep(context, {
+    after: display,
+    before: `${node.numerator.raw}/${node.denominator.raw}`,
+    kind: 'fraction',
+    operands: [numerator, denominator],
+    operator: '/',
+    result,
+    span: node.span,
+    visual,
+  });
+
+  return { display, value: result, visual };
+}
+
+function evaluatePercentage(
+  node: Extract<ExpressionNode, { kind: 'percentage' }>,
+  context: EvaluationContext,
+) {
+  const evaluated = evaluateNode(node.value, context);
+  const percent = evaluated.value;
+  const result = percent / 100;
+  const display = formatNumber(result);
+  const visual: EvaluationVisualValue = {
+    decimal: result,
+    filledPortion: result,
+    kind: 'percentage',
+    percent,
+  };
+
+  recordStep(context, {
+    after: display,
+    before: `${evaluated.display}%`,
+    kind: 'percentage',
+    operands: [percent],
+    operator: '%',
+    result,
+    span: node.span,
+    visual,
+  });
+
+  return { display, value: result, visual };
+}
+
 function evaluateNode(node: ExpressionNode, context: EvaluationContext): EvaluatedNode {
   switch (node.kind) {
     case 'number':
@@ -142,8 +199,10 @@ function evaluateNode(node: ExpressionNode, context: EvaluationContext): Evaluat
     }
 
     case 'fraction':
+      return evaluateFraction(node, context);
+
     case 'percentage':
-      throw unsupportedExpression(node.kind, node.span);
+      return evaluatePercentage(node, context);
   }
 }
 
@@ -161,6 +220,7 @@ export function evaluateExpressionAst(ast: ExpressionNode): EvaluationResult {
       ok: true,
       trace: context.trace,
       value: evaluated.value,
+      visual: evaluated.visual,
     };
   } catch (error) {
     if (error instanceof EvaluationFailure) {
