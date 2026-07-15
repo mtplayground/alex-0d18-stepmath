@@ -89,10 +89,10 @@ export function MultiplicationGrid({ factors, product, revealedUnits }: Multipli
         </p>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto lg:flex lg:justify-center">
         <div
           aria-hidden="true"
-          className="grid min-w-fit gap-2"
+          className="grid min-w-fit gap-2 lg:max-w-2xl"
           style={{ gridTemplateColumns: `repeat(${grid.columns}, minmax(2rem, 1fr))` }}
         >
           {Array.from({ length: grid.totalUnits }, (_, index) => {

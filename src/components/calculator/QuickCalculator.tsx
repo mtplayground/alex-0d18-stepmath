@@ -81,52 +81,56 @@ export function QuickCalculator() {
   }
 
   return (
-    <div className="grid gap-6">
-      <form className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end" onSubmit={handleSubmit}>
-        <div className="grid gap-4">
-          <ModeToggle mode={mode} onModeChange={setMode} />
-          <CalculatorInput onChange={updateExpression} value={expression} />
-        </div>
-        {mode === 'quick' ? (
-          <Button className="min-h-20 px-8" size="lg" type="submit">
-            Solve
-          </Button>
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,24rem)] lg:items-start">
+      <div className="grid gap-6">
+        <form className="grid gap-4" onSubmit={handleSubmit}>
+          <div className="grid gap-4 md:grid-cols-[14rem_minmax(0,1fr)] md:items-end">
+            <ModeToggle mode={mode} onModeChange={setMode} />
+            <CalculatorInput onChange={updateExpression} value={expression} />
+          </div>
+          {mode === 'quick' ? (
+            <Button className="min-h-14 w-full px-8 md:ml-auto md:w-auto" size="lg" type="submit">
+              Solve
+            </Button>
+          ) : null}
+        </form>
+
+        {mode === 'quick' && result ? (
+          <section
+            aria-label="Quick result"
+            className="rounded-panel border border-success-100 bg-success-100 p-5"
+          >
+            <p className="text-eyebrow uppercase text-success-600">Result</p>
+            <p className="numeral-display mt-2 break-all text-4xl font-extrabold text-success-600 sm:text-numeral">
+              {result}
+            </p>
+          </section>
         ) : null}
-      </form>
 
-      {mode === 'quick' && result ? (
-        <section
-          aria-label="Quick result"
-          className="rounded-panel border border-success-100 bg-success-100 p-5"
-        >
-          <p className="text-eyebrow uppercase text-success-600">Result</p>
-          <p className="numeral-display mt-2 break-all text-4xl font-extrabold text-success-600 sm:text-numeral">
-            {result}
-          </p>
-        </section>
-      ) : null}
+        {mode === 'quick' && messages.length > 0 ? (
+          <div className="grid gap-3">
+            {messages.map((message) => (
+              <section
+                aria-live={message.severity === 'error' ? 'assertive' : 'polite'}
+                className={`rounded-panel border p-4 ${messageClasses(message)}`}
+                key={`${message.code}-${message.title}`}
+              >
+                <h3 className="text-base font-bold text-ink-950">{message.title}</h3>
+                <p className="mt-1 text-body text-ink-800">{message.body}</p>
+                <p className="mt-2 text-sm font-semibold text-ink-800">{message.suggestion}</p>
+              </section>
+            ))}
+          </div>
+        ) : null}
+      </div>
 
-      {mode === 'quick' && messages.length > 0 ? (
-        <div className="grid gap-3">
-          {messages.map((message) => (
-            <section
-              aria-live={message.severity === 'error' ? 'assertive' : 'polite'}
-              className={`rounded-panel border p-4 ${messageClasses(message)}`}
-              key={`${message.code}-${message.title}`}
-            >
-              <h3 className="text-base font-bold text-ink-950">{message.title}</h3>
-              <p className="mt-1 text-body text-ink-800">{message.body}</p>
-              <p className="mt-2 text-sm font-semibold text-ink-800">{message.suggestion}</p>
-            </section>
-          ))}
-        </div>
-      ) : null}
-
-      <CalculatorKeypad
-        onBackspace={() => updateExpression(removeLastInput(expression))}
-        onClear={() => updateExpression('')}
-        onInput={(key) => updateExpression(appendKey(expression, key))}
-      />
+      <div className="lg:sticky lg:top-6">
+        <CalculatorKeypad
+          onBackspace={() => updateExpression(removeLastInput(expression))}
+          onClear={() => updateExpression('')}
+          onInput={(key) => updateExpression(appendKey(expression, key))}
+        />
+      </div>
     </div>
   );
 }
