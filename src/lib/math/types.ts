@@ -109,3 +109,34 @@ export type ParseResult =
       ok: false;
       tokens: Token[];
     };
+
+export type MathEvaluationError = {
+  code: 'division-by-zero' | 'unsupported-expression';
+  message: string;
+  span: SourceSpan;
+};
+
+export type EvaluationStep = {
+  after: string;
+  before: string;
+  id: string;
+  kind: 'binary' | 'unary';
+  operands: number[];
+  operator: BinaryOperator | UnaryOperator;
+  order: number;
+  result: number;
+  span: SourceSpan;
+};
+
+export type EvaluationResult =
+  | {
+      displayValue: string;
+      ok: true;
+      trace: EvaluationStep[];
+      value: number;
+    }
+  | {
+      errors: MathEvaluationError[];
+      ok: false;
+      trace: EvaluationStep[];
+    };
