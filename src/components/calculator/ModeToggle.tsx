@@ -22,8 +22,9 @@ export function ModeToggle({ mode, onModeChange }: ModeToggleProps) {
 
         return (
           <button
+            aria-label={`Switch to ${option.label} mode`}
             aria-pressed={isSelected}
-            className={`min-h-touch rounded-control px-4 text-base font-bold transition-colors ${
+            className={`min-h-touch rounded-control px-4 text-base font-bold transition-colors focus-visible:ring-2 focus-visible:ring-aqua-500 focus-visible:ring-offset-2 ${
               isSelected
                 ? 'bg-paper text-cobalt-600 shadow-control'
                 : 'text-ink-600 hover:bg-paper hover:text-ink-950'

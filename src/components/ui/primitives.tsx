@@ -15,7 +15,7 @@ const buttonVariants = {
 } as const;
 
 const buttonSizes = {
-  sm: 'min-h-10 px-3 text-sm',
+  sm: 'min-h-touch px-3 text-sm',
   md: 'min-h-touch px-4 text-base',
   lg: 'min-h-12 px-5 text-lead font-bold',
 } as const;
@@ -35,7 +35,7 @@ export function Button({
   return (
     <button
       className={cx(
-        'inline-flex items-center justify-center rounded-control border font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+        'inline-flex items-center justify-center rounded-control border font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-aqua-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
         buttonVariants[variant],
         buttonSizes[size],
         className,

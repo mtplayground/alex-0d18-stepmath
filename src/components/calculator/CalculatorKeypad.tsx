@@ -41,7 +41,7 @@ const keypadRows: KeypadButton[][] = [
 const buttonClasses: Record<KeypadButtonKind, string> = {
   digit: 'border-graphite-100 bg-paper text-ink-950 hover:bg-cobalt-100',
   operator: 'border-cobalt-100 bg-cobalt-100 text-cobalt-600 hover:bg-aqua-100 hover:text-aqua-600',
-  utility: 'border-coral-100 bg-coral-100 text-coral-600 hover:bg-paper',
+  utility: 'border-coral-100 bg-coral-100 text-ink-950 hover:bg-paper',
 };
 
 export type CalculatorKeypadProps = {
@@ -58,7 +58,7 @@ export function CalculatorKeypad({ onBackspace, onClear, onInput }: CalculatorKe
           {row.map((button) => (
             <button
               aria-label={button.ariaLabel}
-              className={`min-h-16 rounded-control border px-2 text-2xl font-bold shadow-control transition-colors active:translate-y-px ${buttonClasses[button.kind]}`}
+              className={`min-h-16 rounded-control border px-2 text-2xl font-bold shadow-control transition-colors focus-visible:ring-2 focus-visible:ring-aqua-500 focus-visible:ring-offset-2 active:translate-y-px ${buttonClasses[button.kind]}`}
               key={`${button.label}-${button.ariaLabel}`}
               onClick={() => {
                 if (button.label === 'AC') {
