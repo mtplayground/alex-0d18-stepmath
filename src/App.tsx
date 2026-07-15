@@ -1,44 +1,44 @@
-import { Button, Card, NumeralDisplay, Panel } from './components/ui';
+import { useState } from 'react';
+import { CalculatorInput, CalculatorKeypad } from './components/calculator';
+import { Panel } from './components/ui';
 
-const foundationAreas = [
-  { label: 'Palette', tone: 'cobalt' },
-  { label: 'Typography', tone: 'aqua' },
-  { label: 'Shape', tone: 'lemon' },
-  { label: 'Spacing', tone: 'success' },
-] as const;
+const spacedOperators = new Set(['+', '-', '×', '÷']);
+
+function appendKey(current: string, key: string) {
+  if (!spacedOperators.has(key)) {
+    return `${current}${key}`;
+  }
+
+  const trimmed = current.trimEnd();
+  return trimmed ? `${trimmed} ${key} ` : key === '-' ? '-' : trimmed;
+}
+
+function removeLastInput(value: string) {
+  const trimmedEnd = value.trimEnd();
+
+  if (trimmedEnd.length === 0) {
+    return '';
+  }
+
+  return trimmedEnd.slice(0, -1).trimEnd();
+}
 
 export function App() {
+  const [expression, setExpression] = useState('');
+
   return (
     <main className="notebook-grid min-h-screen text-ink-950">
-      <div className="mx-auto flex min-h-screen w-full max-w-5xl flex-col justify-center gap-8 px-gutter py-12">
-        <Panel
-          actions={
-            <>
-              <Button variant="secondary">Secondary</Button>
-              <Button>Primary</Button>
-            </>
-          }
-          subtitle="Bright notebook surfaces, confident contrast, compact rounded shapes, and tabular numerals are ready for the calculator screens planned in later issues."
-          title="Design system foundation"
-        >
-          <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
-            <div>
-              <p className="text-eyebrow uppercase text-cobalt-600">Large numeral style</p>
-              <NumeralDisplay>128</NumeralDisplay>
-            </div>
-            <Button className="sm:self-center" size="lg" variant="quiet">
-              Quiet action
-            </Button>
+      <div className="mx-auto flex min-h-screen w-full max-w-4xl flex-col justify-center px-gutter py-12">
+        <Panel title="Calculator">
+          <div className="grid gap-6">
+            <CalculatorInput onChange={setExpression} value={expression} />
+            <CalculatorKeypad
+              onBackspace={() => setExpression((current) => removeLastInput(current))}
+              onClear={() => setExpression('')}
+              onInput={(key) => setExpression((current) => appendKey(current, key))}
+            />
           </div>
         </Panel>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          {foundationAreas.map(({ label, tone }) => (
-            <Card key={label} tone={tone}>
-              <p className="text-base font-semibold text-ink-800">{label}</p>
-            </Card>
-          ))}
-        </div>
       </div>
     </main>
   );
